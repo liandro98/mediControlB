@@ -82,6 +82,50 @@ const authMiddleware = (req, res, next) => {
     }
 };
 
+// Gurardar recetas y medicamentos
+
+app.post('/api/recetas', authMiddleware, (req, res) => {
+    const { consultorio, doctor, fecha, diagnostico, telefono, direccion, medicamentos } = req.body;
+    const idUsuario = req.user.idUsuario; // Obtener el ID del usuario autenticado
+
+    // Insertar la receta
+    const sqlReceta = `
+        INSERT INTO recetas (consultorio, doctor, fecha, diagnostico, telefono, direccion, idUsuario)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    db.query(sqlReceta, [consultorio, doctor, fecha, diagnostico, telefono, direccion, idUsuario], (err, result) => {
+        if (err) {
+            console.error('Error al insertar receta:', err);
+            return res.status(500).json({ error: 'Error al guardar la receta' });
+        }
+
+        const idReceta = result.insertId;
+
+        // Insertar los medicamentos
+        const sqlMedicamento = `
+            INSERT INTO medicamentos (nombre, dosis, cada, fechaInicio, fechaFin, idReceta)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        medicamentos.forEach(medicamento => {
+            db.query(sqlMedicamento, [
+                medicamento.nombre,
+                medicamento.dosis,
+                medicamento.cada,
+                medicamento.fechaInicio,
+                medicamento.fechaFin,
+                idReceta
+            ], (err, result) => {
+                if (err) {
+                    console.error('Error al insertar medicamento:', err);
+                    return res.status(500).json({ error: 'Error al guardar los medicamentos' });
+                }
+            });
+        });
+
+        res.status(201).json({ message: 'Receta y medicamentos guardados con éxito', idReceta });
+    });
+});
+
 // Ruta protegida de prueba
 app.get('/protected', authMiddleware, (req, res) => {
     res.json({ message: 'Acceso permitido', user: req.user });
