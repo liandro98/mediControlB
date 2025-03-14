@@ -4,6 +4,7 @@ const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const session = require('express-session');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,6 +13,14 @@ const SECRET_KEY = process.env.SECRET_KEY;
 // Middleware
 app.use(express.json());
 app.use(cors());
+app.use(
+    session({
+      secret: '12345', // Cambia esto por una cadena secreta segura
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: false }, // Cambia a true si usas HTTPS
+    })
+  );
 
 // Conexión a MySQL
 const db = mysql.createConnection({
@@ -67,6 +76,35 @@ app.post('/login', (req, res) => {
         res.json({ token, user: { idUsuario: user.idUsuario, usuario: user.usuario, nombreCompleto: user.nombreCompleto, correoElec: user.correoElec } });
     });
 });
+
+// Endpoint para autenticar con Google
+app.post('/api/auth/google', async (req, res) => {
+    const { uid, email, nombre } = req.body;
+  
+    try {
+      // Verificar si el usuario ya existe en la base de datos
+      const [user] = await db
+        .promise()
+        .query('SELECT * FROM usuario WHERE googleId = ?', [uid]);
+  
+      if (user.length === 0) {
+        // Si el usuario no existe, crearlo
+        await db
+          .promise()
+          .query(
+            'INSERT INTO usuario (googleId, correoElec, nombreCompleto, usuario) VALUES (?, ?, ?, ?)',
+            [uid, email, nombre, email] // Usar el correo electrónico como nombre de usuario
+          );
+      }
+  
+      // Guardar el usuario en la sesión
+      req.session.user = { uid, email, nombre };
+      res.status(200).json({ message: 'Autenticación exitosa', user: req.session.user });
+    } catch (error) {
+      console.error('Error en la autenticación con Google:', error);
+      res.status(500).json({ error: 'Error en la autenticación' });
+    }
+  });
 
 // Middleware de autenticación
 const authMiddleware = (req, res, next) => {
