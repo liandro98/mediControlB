@@ -61,3 +61,47 @@ exports.googleAuth = async (req, res) => {
         
     }
 }
+
+exports.premium = async (req, res) => {
+    const { idUsuario } = req.user; // Obtener el ID del usuario autenticado
+  
+    try {
+      // Actualizar el estado de la suscripción premium
+      const sql = "UPDATE usuario SET esPremium = 1 WHERE idUsuario = ?";
+      db.query(sql, [idUsuario], (err, result) => {
+        if (err) {
+          console.error('Error al actualizar la suscripción premium:', err);
+          return res.status(500).json({ error: 'Error al actualizar la suscripción premium' });
+        }
+        res.status(200).json({ message: 'Suscripción premium activada con éxito' });
+      });
+    } catch (error) {
+      console.error('Error en la activación de la suscripción premium:', error);
+      res.status(500).json({ error: 'Error en la activación de la suscripción premium' });
+    }
+  }
+
+exports.obtenerPremium = async (req, res) => {
+    const idUsuario = req.user.idUsuario; // Obtener el ID del usuario autenticado
+
+  try {
+    // Consultar el estado de la suscripción premium
+    const sql = "SELECT esPremium FROM usuario WHERE idUsuario = ?";
+    db.query(sql, [idUsuario], (err, results) => {
+      if (err) {
+        console.error('Error al obtener el estado premium:', err);
+        return res.status(500).json({ error: 'Error al obtener el estado premium' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+
+      const esPremium = results[0].esPremium === 1; // Convertir a booleano
+      res.json(esPremium); // Devolver el estado de la suscripción premium
+    });
+  } catch (error) {
+    console.error('Error en la consulta del estado premium:', error);
+    res.status(500).json({ error: 'Error en la consulta del estado premium' });
+  }
+}

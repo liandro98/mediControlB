@@ -15,10 +15,10 @@ app.use(express.json());
 app.use(cors());
 app.use(
     session({
-      secret: '12345', // Cambia esto por una cadena secreta segura
+      secret: '12345', 
       resave: false,
       saveUninitialized: true,
-      cookie: { secure: false }, // Cambia a true si usas HTTPS
+      cookie: { secure: false }, // Cambia a true si usa HTTPS
     })
 );
 
