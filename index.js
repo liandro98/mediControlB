@@ -6,6 +6,7 @@ const session = require('express-session');
 const authRoutes = require('./routes/authRoutes');
 const recetaRoutes = require('./routes/recetaRoutes');
 const medicamentoRoutes = require('./routes/medicamentoRoutes');
+const checkMedicamentos = require('./config/cron')
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,8 @@ app.use(
 app.use('/api/auth', authRoutes);
 app.use('/api/receta', recetaRoutes);
 app.use('/api/medicamento', medicamentoRoutes);
+
+checkMedicamentos();
 
 
 // Iniciar servidor
