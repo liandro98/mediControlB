@@ -28,7 +28,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/receta', recetaRoutes);
 app.use('/api/medicamento', medicamentoRoutes);
 
-checkMedicamentos();
+//Servicio de correo deteni
+//checkMedicamentos();
 
 
 // Iniciar servidor

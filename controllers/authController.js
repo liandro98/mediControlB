@@ -42,25 +42,50 @@ exports.login = (req, res) => {
     });
 }
 
+
 exports.googleAuth = async (req, res) => {
     const { uid, email, nombre } = req.body;
 
     try {
+        // Verificar si el usuario ya existe
         const [user] = await db.promise().query('SELECT * FROM usuario WHERE googleId = ?', [uid]);
 
-        if(user.length === 0){
-            await db.promise().query('INSERT INTO usuario (googleId, correoElec, nombreCompleto, usuario) VALUES (?,?,?,?)',
-                [uid, email, nombre, email]);
+        let idUsuario;
+        if (user.length === 0) {
+            // Si el usuario no existe, crearlo
+            const [result] = await db.promise().query(
+                'INSERT INTO usuario (googleId, correoElec, nombreCompleto, usuario) VALUES (?, ?, ?, ?)',
+                [uid, email, nombre, email]
+            );
+            idUsuario = result.insertId; // Obtener el ID del nuevo usuario
+        } else {
+            // Si el usuario ya existe, usar su ID
+            idUsuario = user[0].idUsuario;
         }
 
-        req.session.user = {uid, email, nombre};
-        res.status(200).json({message : 'Autenticacion exitosa', user : req.session.user });
+        // Generar un token JWT
+        const token = jwt.sign(
+            { idUsuario, nombreCompleto: nombre }, 
+            SECRET_KEY, // Clave secreta
+            { expiresIn: '1h' } // Tiempo de expiración
+        );
+
+        // Devolver el token y la información del usuario
+        res.status(200).json({
+            message: 'Autenticación exitosa',
+            token,
+            user: {
+                idUsuario,
+                usuario: email,
+                nombreCompleto: nombre,
+                correoElec: email
+            }
+        });
     } catch (error) {
-        console.error('Error en la autenticacion con Google: ', error);
-        res.status(500).json({error : 'Error en la autenticacion'});
-        
+        console.error('Error en la autenticación con Google:', error);
+        res.status(500).json({ error: 'Error en la autenticación' });
     }
-}
+};
 
 exports.premium = async (req, res) => {
     const { idUsuario } = req.user; // Obtener el ID del usuario autenticado
