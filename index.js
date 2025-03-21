@@ -13,13 +13,28 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: 'https://medicontrol-7f8f6.web.app', // Permitir todos los orígenes
+  origin: [
+    'https://medicontrol-7f8f6.web.app', // Tu app web
+    'capacitor://localhost',  // Para la app en Android
+    'http://localhost',       // Para pruebas en navegador
+    'http://10.0.2.2:3000'    // Para emulador Android
+  ], // Permitir todos los orígenes
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
   credentials: true
 }));
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://medicontrol-7f8f6.web.app');
+  const allowedOrigins = [
+    'https://medicontrol-7f8f6.web.app',
+    'capacitor://localhost',
+    'http://localhost',
+    'http://10.0.2.2:3000'
+  ];
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-auth-token');
   res.header('Access-Control-Allow-Credentials', 'true');
