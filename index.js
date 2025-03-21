@@ -14,10 +14,9 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors({
   origin: [
-    'https://medicontrol-7f8f6.web.app', // Tu app web
-    'capacitor://localhost',  // Para la app en Android
-    'http://localhost',       // Para pruebas en navegador
-    'http://10.0.2.2:3000'    // Para emulador Android
+    'https://medicontrol-7f8f6.web.app', // Web en Firebase
+    'capacitor://localhost',             // App móvil Capacitor (Android/iOS)
+    'http://localhost'      // Para emulador Android
   ], // Permitir todos los orígenes
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
@@ -25,18 +24,15 @@ app.use(cors({
 }));
 app.use((req, res, next) => {
   console.log("Request recibido desde:", req.headers.origin);  // 🛠️ Ver origen real
-  next();
-
   const allowedOrigins = [
     'https://medicontrol-7f8f6.web.app',
     'capacitor://localhost',
-    'http://localhost',
-    'http://10.0.2.2:3000'
+    'http://localhost'
   ];
+  
   const origin = req.headers.origin;
-
   if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Origin', origin);
   }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-auth-token');
