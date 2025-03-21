@@ -24,6 +24,9 @@ app.use(cors({
   credentials: true
 }));
 app.use((req, res, next) => {
+  console.log("Request recibido desde:", req.headers.origin);  // 🛠️ Ver origen real
+  next();
+
   const allowedOrigins = [
     'https://medicontrol-7f8f6.web.app',
     'capacitor://localhost',
@@ -48,7 +51,7 @@ app.use('/api/receta', recetaRoutes);
 app.use('/api/medicamento', medicamentoRoutes);
 
 //Servicio de correo deteni
-checkMedicamentos();
+//checkMedicamentos();
 
 
 // Iniciar servidor
