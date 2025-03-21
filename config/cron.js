@@ -29,7 +29,7 @@ const checkMedicamentos = async () => {
 };
 
 // Programar la tarea para ejecutarse todos los días a las 8:00 AM
-cron.schedule('39 16 * * *', () => {
+cron.schedule('30 17 * * *', () => {
   console.log('Verificando medicamentos...');
   checkMedicamentos();
 });
